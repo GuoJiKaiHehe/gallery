@@ -34,6 +34,61 @@
             left:0;
             display: none;
         }
+         .loading{
+            width:200px;
+            height:50px;
+            margin:auto;
+            position: absolute;
+            top:0;
+            left:0;
+            right:0;
+            bottom: 0;
+        }
+        .loading li{
+            height:50px;
+           width:50px;
+           float:left;
+           border-radius:50px;
+           list-style: none;
+           /* transition:; */
+        }
+        .loading li:first-child{
+            background: red;
+            animation:first 1s linear 0.5s infinite alternate;
+        }
+        .loading li:nth-child(2){
+            background: green;
+            animation:second 1s linear 0.6s infinite alternate;
+        }
+        .loading li:last-child{
+            background: yellow;
+            animation:thrid 1s linear 0.7s infinite alternate;
+        }
+        @keyframes first{
+            0%{
+                transform:scale(0.8,0.8);
+            }
+            100%{
+                transform:scale(1,1);
+            }
+        }
+         @keyframes second{
+            0%{
+                transform:scale(1,1);
+            }
+            100%{
+                transform:scale(0.8,0.8);
+            }
+         }
+          @keyframes thrid{
+            0%{
+                transform:scale(1,1);
+            }
+            100%{
+                transform:scale(0.6,0.6);
+            }
+         }
+        
     </style>
 </head>
 <body>
@@ -44,7 +99,13 @@
 </ul>
 <div class="large" id="large_container">
         <img id="large_img">
-    </div>
+        <ul class="loading">
+        <li></li>
+        <li></li>
+        <li></li>
+    </ul>
+</div>
+
 <script src="zepto.min.js"></script>
 <script>
     var total=17;
@@ -70,7 +131,7 @@ render();
 var cid;
 var wImage=$("#large_img");
 var domImage=wImage[0];
-
+var loading=$(".loading")
 function loadImage(_id,callback){
     $("#container").css({
         height:zWin.height(),
@@ -83,7 +144,16 @@ function loadImage(_id,callback){
     }).show();
     var imgsrc='img/'+_id+'.large.jpg';
     var imageObj=new Image();
-    
+    var preImg=new Image();
+    var nextImg=new Image();
+    if((_id-1)>=1){
+
+       preImg.src='img/'+(_id-1)+'.large.jpg'; 
+    }
+    if((_id+1)<=total){
+
+        nextImg.src='img/'+(_id+1)+'.large.jpg';
+    }
     imageObj.onload=function(){
         var winWidth=zWin.width();
         var winHeight=zWin.height();
@@ -114,10 +184,13 @@ function loadImage(_id,callback){
     imageObj.src=imgsrc;
 }
 
+
 $('#container').delegate('li','tap',function(){
      var _id = cid = $(this).attr('data-id');
+        loading.show();
         loadImage(_id,function(){
-
+           
+            loading.hide();
         });
 });
 $("#large_container").tap(function(){
@@ -132,6 +205,8 @@ $('#large_container').mousedown(function(e){
 });
 var lock=false;
 $('#large_container').swipeLeft(function(){
+
+    loading.show();
     if(lock){
         return;
     }
@@ -146,11 +221,13 @@ $('#large_container').swipeLeft(function(){
             domImage.removeEventListener('webkitAnimationEnd');
             lock=false;
             console.log(lock)
+            loading.hide();
         },false);
         wImage.addClass('animated bounceInRight');
     })
 })
 $('#large_container').swipeRight(function(){
+    loading.show();
     if(lock){
         return;
     }
@@ -165,6 +242,7 @@ $('#large_container').swipeRight(function(){
             wImage.removeClass("animated bounceInLeft");
              domImage.removeEventListener('webkitAnimationEnd');
              lock=false;
+             loading.hide();
         },false);
         wImage.addClass("animated bounceInLeft");
     })
