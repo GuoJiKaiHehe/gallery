@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>gallery</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0"  />
+    <link rel="stylesheet" href="animate.css" />
+    <style>
+        *{
+            padding:0;
+            margin:0;
+            color:#666;
+            text-decoration: none;
+
+        }
+        body{
+            background-color:#000;
+        }
+        ul li{
+            list-style: none;
+        }
+        .img-container li{
+            overflow: hidden;
+            float:left;
+
+        }
+        .clear:after{display: block; content: "\20"; height: 0; clear: both; overflow: hidden; visibility: hidden;}/*ie8以上*/
+        .large{
+            position:absolute;
+            height:100%;
+            width:100%;
+            background-color:#000;
+            top:0;
+            left:0;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+<ul class="img-container clear" id="container">
+    <li>
+        <img src="img/1.jpg" alt="" />
+    </li>
+</ul>
+<div class="large" id="large_container">
+        <img id="large_img">
+    </div>
+<script src="zepto.min.js"></script>
+<script>
+    var total=17;
+    var zWin=$(window);
+    var container=$("#container");
+    function render(){
+        var html='';
+        var winWidth=zWin.width();
+        var padding=2;
+        var picWidth=Math.floor((winWidth-padding*3)/4);
+        for(var i=1;i<=total;i++){
+            var p=padding;
+            if(i%4==1){
+                p=0;
+            }else{
+                p=2;
+            }
+            html+='<li class="animated bounceIn" data-id="'+i+'"style="width:'+picWidth+'px;height:'+picWidth+'px;padding-left:'+p+'px;padding-top:'+padding+'px"><img src="img/'+i+'.jpg" /></li>'
+        }
+        container.html(html);
+    }
+render();
+var cid;
+var wImage=$("#large_img");
+var domImage=wImage[0];
+
+function loadImage(_id,callback){
+    $("#container").css({
+        height:zWin.height(),
+        'overflow':'hidden'
+    });
+
+    $("#large_container").css({
+        width:zWin.width(),
+        height:zWin.height()
+    }).show();
+    var imgsrc='img/'+_id+'.large.jpg';
+    var imageObj=new Image();
+    
+    imageObj.onload=function(){
+        var winWidth=zWin.width();
+        var winHeight=zWin.height();
+        var w=imageObj.width;
+        var h=imageObj.height;
+        var realPaddingL=parseInt( (winWidth-winHeight*w/h )/2); //得到padding
+        var realPaddingT=parseInt( (winHeight-winWidth*h/w ) /2)
+        // console.log(realPaddingL,h)
+        wImage.css({
+            width:"auto",
+            height:"auto",
+            "padding-left":0,
+            "padding-top":0
+        })
+        if(h/w>1.2){
+             wImage.attr("src",imgsrc).css({
+                paddingLeft:realPaddingL+'px',
+                height:winHeight,
+             });
+        }else{
+            wImage.attr("src",imgsrc).css({
+                paddingTop:realPaddingT+'px',
+                width:winWidth
+             });
+        }
+        callback&&callback();
+    }
+    imageObj.src=imgsrc;
+}
+
+$('#container').delegate('li','tap',function(){
+     var _id = cid = $(this).attr('data-id');
+        loadImage(_id,function(){
+
+        });
+});
+$("#large_container").tap(function(){
+    $("#container").css({
+        height:'auto',
+        overflow:"hidden"
+    });
+    $('#large_container').hide();
+})
+$('#large_container').mousedown(function(e){
+        e.preventDefault();
+});
+var lock=false;
+$('#large_container').swipeLeft(function(){
+    if(lock){
+        return;
+    }
+    if(cid==total){
+        return;
+    }
+     cid++;
+     lock=true;
+    loadImage(cid,function(){
+        domImage.addEventListener('webkitAnimationEnd',function(){
+            wImage.removeClass('animated bounceInRight');
+            domImage.removeEventListener('webkitAnimationEnd');
+            lock=false;
+            console.log(lock)
+        },false);
+        wImage.addClass('animated bounceInRight');
+    })
+})
+$('#large_container').swipeRight(function(){
+    if(lock){
+        return;
+    }
+    if(cid==1){
+        return;
+    }
+
+    cid--;
+    lock=true;
+    loadImage(cid,function(){
+        domImage.addEventListener('webkitAnimationEnd',function(){
+            wImage.removeClass("animated bounceInLeft");
+             domImage.removeEventListener('webkitAnimationEnd');
+             lock=false;
+        },false);
+        wImage.addClass("animated bounceInLeft");
+    })
+})
+    
+</script>
+</body>
+</html>
